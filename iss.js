@@ -13,10 +13,33 @@ const fetchMyIP = function(callback) {
   const domain = `https://api.ipify.org?format=json`;
   request(domain, (error, response, body) => {
     if (!error) {
-      const data = JSON.parse(body);
-      callback(null, data.ip);
-    } else callback(error, null);
+      if (response.statusCode === 200) {
+        const data = JSON.parse(body);
+        return callback(null, data.ip);
+      } else {
+        const msg = `Status Code ${response.statusCode} when fetching IP. Response: ${body}`;
+        return callback(Error(msg), null);
+      }
+    } else return callback(error, null);
   });
 };
 
-module.exports = { fetchMyIP };
+const fetchCoordsByIP = function(callback) {
+  const domain = `https://freegeoip.app/json/`;
+  request(domain, (error, response, body) => {
+    if (!error) {
+      if (response.statusCode === 200) {
+        const data = JSON.parse(body);
+        const coords = { latitude: data.latitude, longitude: data.longitude};
+        return callback(null, coords);
+      } else {
+        const msg = `Status Code ${response.statusCode} when fetching coordinates. Response: ${body}`;
+        callback(Error(msg), null);
+        return;
+      }
+    } else callback(error, null);
+  });
+};
+// fetchCoordsByIP();
+
+module.exports = { fetchMyIP, fetchCoordsByIP };
